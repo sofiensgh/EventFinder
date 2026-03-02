@@ -1,0 +1,74 @@
+﻿@model IEnumerable<EventFinder.Models.Event>
+
+@{
+    ViewData["Title"] = "Event Finder";
+}
+
+<div class="text-center mb-5">
+    <h1 class="display-4">Discover Events Near You</h1>
+    <p class="lead">Find local events, meet new people, and have fun!</p>
+    <a asp-action="Create" class="btn btn-primary btn-lg">➕ Create Event</a>
+    <a asp-action="Events" class="btn btn-outline-primary btn-lg">📋 Browse All Events</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">📅 Upcoming Events</h5>
+                <p class="card-text display-4">@Model.Count()</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">👥 Total Attendees</h5>
+                <p class="card-text display-4">@Model.Sum(e => e.AttendeeCount)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">🏷️ Categories</h5>
+                <p class="card-text display-4">@Model.Select(e => e.Category).Distinct().Count()</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Upcoming Events</h2>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Title</h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            📅 @item.StartDate.ToString("MMM dd, yyyy - h:mm tt")<br>
+                            📍 @item.City, @item.Country<br>
+                            🏷️ @item.Category
+                        </small>
+                    </p>
+                    <p class="card-text">@(item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)</p>
+                    <p class="card-text">
+                        <span class="badge bg-success">@item.AttendeeCount going</span>
+                    </p>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary">View Details →</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
