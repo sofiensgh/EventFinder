@@ -1,0 +1,250 @@
+﻿@model EventFinder.Models.Event
+
+@{
+    ViewData["Title"] = Model.Title;
+    var isUserGoing = Model.RSVPs?.Any(r => r.UserId == "temp-user-id" && r.Status == EventFinder.Models.RSVPStatus.Going) ?? false;
+    var isUserMaybe = Model.RSVPs?.Any(r => r.UserId == "temp-user-id" && r.Status == EventFinder.Models.RSVPStatus.Maybe) ?? false;
+}
+
+<!-- Hero Section with Event Image -->
+<div class="relative h-96 bg-gradient-to-r from-blue-600 to-purple-600">
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" alt="@Model.Title" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    }
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent"></div>
+
+    <!-- Event Title Overlay -->
+    <div class="absolute bottom-0 left-0 right-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex items-center space-x-2 text-blue-200 mb-2">
+                <i class="fas fa-calendar-alt"></i>
+                <span>@Model.StartDate.ToString("MMMM dd, yyyy")</span>
+                <i class="fas fa-clock ml-4"></i>
+                <span>@Model.StartDate.ToString("h:mm tt") - @Model.EndDate.ToString("h:mm tt")</span>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-4">@Model.Title</h1>
+            <div class="flex items-center space-x-4 text-white">
+                <span class="bg-blue-500 px-4 py-1 rounded-full text-sm">
+                    <i class="fas fa-tag mr-1"></i>@Model.Category
+                </span>
+                <span>
+                    <i class="fas fa-map-marker-alt mr-1"></i>@Model.City, @Model.Country
+                </span>
+                <span>
+                    <i class="fas fa-user mr-1"></i>Organized by @Model.OrganizerName
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Event Details -->
+        <div class="lg:col-span-2">
+            <!-- RSVP Status Alert -->
+            @if (isUserGoing)
+            {
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+                        <p>You're going to this event! <a href="#" class="underline">Change status</a></p>
+                    </div>
+                </div>
+            }
+            else if (isUserMaybe)
+            {
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-500 mr-3 text-xl"></i>
+                        <p>You might attend this event. <a href="#" class="underline">Change status</a></p>
+                    </div>
+                </div>
+            }
+
+            <!-- About Event -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">About This Event</h2>
+                <div class="prose max-w-none text-gray-700">
+                    @Model.Description
+                </div>
+            </div>
+
+            <!-- Location & Map -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Location</h2>
+                <div class="mb-4">
+                    <p class="text-gray-700">
+                        <i class="fas fa-map-pin text-red-500 mr-2"></i>
+                        @Model.Address, @Model.City, @Model.Country
+                    </p>
+                </div>
+                <!-- Map placeholder - can integrate Google Maps later -->
+                <div class="bg-gray-200 rounded-xl h-64 flex items-center justify-center">
+                    <i class="fas fa-map text-gray-400 text-5xl"></i>
+                    <span class="ml-2 text-gray-500">Map integration coming soon</span>
+                </div>
+            </div>
+
+            <!-- Attendees List - FIXED VERSION -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>
+                    Attendees (@Model.AttendeeCount going)
+                </h2>
+                @if (Model.RSVPs != null && Model.RSVPs.Any(r => r.Status == EventFinder.Models.RSVPStatus.Going))
+                {
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        @foreach (var rsvp in Model.RSVPs.Where(r => r.Status == EventFinder.Models.RSVPStatus.Going))
+                        {
+                            <div class="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    @{
+                                        // Safe way to get first character
+                                        var firstChar = !string.IsNullOrEmpty(rsvp.UserName) ? rsvp.UserName.Substring(0, 1).ToUpper() : "?";
+                                    }
+                                    @firstChar
+                                </div>
+                                <span class="text-sm font-medium truncate">@rsvp.UserName</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-gray-500">No attendees yet. Be the first!</p>
+                }
+            </div>
+        </div>
+
+        <!-- Right Column - RSVP Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl shadow-xl p-6 sticky top-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Join this event</h3>
+
+                <!-- Date & Time -->
+                <div class="mb-6 p-4 bg-blue-50 rounded-xl">
+                    <div class="flex items-center text-blue-700 mb-2">
+                        <i class="fas fa-calendar-day mr-2"></i>
+                        <span class="font-semibold">@Model.StartDate.ToString("dddd, MMMM d, yyyy")</span>
+                    </div>
+                    <div class="flex items-center text-blue-700">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span>@Model.StartDate.ToString("h:mm tt") - @Model.EndDate.ToString("h:mm tt")</span>
+                    </div>
+                </div>
+
+                <!-- Attendee Stats -->
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-600">
+                            <i class="fas fa-user-check text-green-500 mr-1"></i>
+                            @Model.AttendeeCount going
+                        </span>
+                        <span class="text-gray-600">
+                            <i class="fas fa-user-clock text-yellow-500 mr-1"></i>
+                            @(Model.RSVPs?.Count(r => r.Status == EventFinder.Models.RSVPStatus.Maybe) ?? 0) maybe
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        @{
+                            var total = Model.RSVPs?.Count() ?? 0;
+                            var going = Model.AttendeeCount;
+                            var goingPercent = total > 0 ? (going * 100 / total) : 0;
+                        }
+                        <div class="bg-green-500 h-2 rounded-full" style="width: @goingPercent%"></div>
+                    </div>
+                </div>
+
+                <!-- RSVP Buttons -->
+                <form asp-action="RSVP" method="post" class="space-y-3">
+                    <input type="hidden" name="eventId" value="@Model.Id" />
+
+                    <button type="submit" name="status" value="Going"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition-all transform hover:scale-105 @(isUserGoing ? "ring-4 ring-green-300" : "")">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        @(isUserGoing ? "You're Going!" : "Going")
+                    </button>
+
+                    <button type="submit" name="status" value="Maybe"
+                            class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-xl font-semibold transition-all transform hover:scale-105 @(isUserMaybe ? "ring-4 ring-yellow-300" : "")">
+                        <i class="fas fa-clock mr-2"></i>
+                        @(isUserMaybe ? "Maybe" : "Maybe")
+                    </button>
+
+                    @if (isUserGoing || isUserMaybe)
+                    {
+                        <button type="submit" name="status" value="NotGoing"
+                                class="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold transition-all">
+                            <i class="fas fa-times-circle mr-2"></i>
+                            Not Going
+                        </button>
+                    }
+                </form>
+
+                <!-- Share buttons -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-sm text-gray-600 mb-3">Share this event:</p>
+                    <div class="flex space-x-2">
+                        <a href="#" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-center hover:bg-blue-700">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="flex-1 bg-blue-400 text-white py-2 rounded-lg text-center hover:bg-blue-500">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-center hover:bg-green-700">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Report/Edit (if organizer) -->
+                @if (Model.OrganizerId == "temp-user-id")
+                {
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <a href="#" class="text-blue-600 hover:text-blue-800 text-sm block mb-2">
+                            <i class="fas fa-edit mr-1"></i>Edit Event
+                        </a>
+                        <a href="#" class="text-red-600 hover:text-red-800 text-sm block">
+                            <i class="fas fa-trash mr-1"></i>Cancel Event
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Similar Events Section -->
+@if (ViewBag.SimilarEvents != null)
+{
+    var similarEvents = ViewBag.SimilarEvents as List<EventFinder.Models.Event>;
+    if (similarEvents != null && similarEvents.Any())
+    {
+        <div class="bg-gray-50 py-12 mt-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-8">Similar Events You Might Like</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach (var similar in similarEvents)
+                    {
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                            <div class="h-32 bg-gradient-to-r from-blue-400 to-purple-400"></div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg mb-1">@similar.Title</h3>
+                                <p class="text-sm text-gray-600 mb-2">
+                                    <i class="far fa-clock mr-1"></i>@similar.StartDate.ToString("MMM dd")
+                                </p>
+                                <a asp-action="Details" asp-route-id="@similar.Id" class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                                    View Details →
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -1,0 +1,196 @@
+﻿@model IEnumerable<EventFinder.Models.Event>
+
+@{
+    ViewData["Title"] = "Browse Events";
+    var categories = new[] { "Technology", "Music", "Sports", "Food", "Arts", "Business", "Education", "Charity" };
+    var cities = Model.Select(e => e.City).Distinct().OrderBy(c => c).ToList();
+}
+
+<!-- Page Header -->
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold text-white mb-4">Browse Events</h1>
+        <p class="text-xl text-blue-100">Discover amazing events happening near you</p>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+    <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search by keyword -->
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <div class="relative">
+                    <input type="text" name="search" value="@Context.Request.Query["search"]"
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Search events...">
+                    <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- City filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                <select name="city" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Cities</option>
+                    @foreach (var city in cities)
+                    {
+                        <option value="@city" selected="@(Context.Request.Query["city"] == city)">@city</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Category filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select name="category" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat" selected="@(Context.Request.Query["category"] == cat)">@cat</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Date filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input type="date" name="date" value="@Context.Request.Query["date"]"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Filter buttons -->
+            <div class="md:col-span-4 flex justify-end space-x-3">
+                <a href="@Url.Action("Events")" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-times mr-2"></i>Clear Filters
+                </a>
+                <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results count -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+    <p class="text-gray-600">
+        <span class="font-semibold">@Model.Count()</span> events found
+    </p>
+</div>
+
+<!-- Events Grid -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-16 bg-white rounded-2xl shadow-xl">
+            <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">No Events Found</h3>
+            <p class="text-gray-500 mb-6">Try adjusting your filters or create a new event</p>
+            <a asp-action="Create" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors inline-flex items-center">
+                <i class="fas fa-plus-circle mr-2"></i>Create Event
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @foreach (var item in Model)
+            {
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 group">
+                    <!-- Event Image -->
+                    <div class="h-48 bg-gradient-to-r from-blue-500 to-purple-500 relative overflow-hidden">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Title" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-white text-6xl opacity-50"></i>
+                            </div>
+                        }
+                        <div class="absolute top-4 right-4">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                <i class="far fa-clock mr-1"></i>@item.StartDate.ToString("MMM dd")
+                            </span>
+                        </div>
+                        @if (item.StartDate < DateTime.Now)
+                        {
+                            <div class="absolute top-4 left-4">
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-hourglass-end mr-1"></i>Ongoing
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Event Content -->
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-tag mr-1"></i>@item.Category
+                            </span>
+                            <span class="text-gray-500 text-sm flex items-center">
+                                <i class="fas fa-map-marker-alt mr-1 text-red-400"></i>@item.City
+                            </span>
+                        </div>
+
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1">@item.Title</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-2">@item.Description</p>
+
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center text-gray-500 text-sm">
+                                <i class="fas fa-user mr-1 text-blue-500"></i>
+                                <span class="truncate max-w-[100px]">@item.OrganizerName</span>
+                            </div>
+                            <div class="flex items-center text-green-600 font-semibold">
+                                <i class="fas fa-user-check mr-1"></i>
+                                <span>@item.AttendeeCount</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress bar for capacity (optional) -->
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: @Math.Min((item.AttendeeCount * 10), 100)%"></div>
+                            </div>
+                        </div>
+
+                        <a asp-action="Details" asp-route-id="@item.Id"
+                           class="block w-full text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg">
+                            View Details
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination (if needed) -->
+        @if (Model.Count() > 9)
+        {
+            <div class="flex justify-center mt-12">
+                <nav class="flex space-x-2">
+                    <a href="#" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Previous</a>
+                    <a href="#" class="px-4 py-2 bg-blue-600 text-white rounded-lg">1</a>
+                    <a href="#" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">2</a>
+                    <a href="#" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">3</a>
+                    <a href="#" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Next</a>
+                </nav>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-submit form when filters change (optional)
+        document.querySelectorAll('select, input[type="date"]').forEach(element => {
+            element.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+    </script>
+}

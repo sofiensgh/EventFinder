@@ -1,0 +1,94 @@
+﻿@model IEnumerable<EventFinder.Models.Event>
+
+@{
+    ViewData["Title"] = "Events Map";
+}
+
+<!-- Header -->
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold text-white mb-4">Events Map</h1>
+        <p class="text-xl text-blue-100">Find events happening near you</p>
+    </div>
+</div>
+
+<!-- Map Container -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-2xl shadow-xl p-4">
+        <!-- Map placeholder - You can integrate Leaflet or Google Maps here -->
+        <div class="bg-gray-100 rounded-xl h-[600px] relative overflow-hidden">
+            <!-- Map Image Placeholder -->
+            <img src="https://via.placeholder.com/1200x600/f0f0f0/cccccc?text=Map+Integration"
+                 alt="Map Placeholder"
+                 class="w-full h-full object-cover opacity-50">
+
+            <!-- Event Markers (Static example) -->
+            @foreach (var item in Model.Take(5))
+            {
+                <div class="absolute" style="left: @(new Random().Next(10, 90))%; top: @(new Random().Next(10, 90))%;">
+                    <div class="group relative">
+                        <!-- Marker -->
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg cursor-pointer transform hover:scale-110 transition-transform animate-bounce">
+                            <i class="fas fa-map-marker-alt text-xl"></i>
+                        </div>
+
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-white rounded-lg shadow-xl p-3 z-10">
+                            <p class="font-bold text-sm mb-1">@item.Title</p>
+                            <p class="text-xs text-gray-600 mb-1">@item.StartDate.ToString("MMM dd, h:mm tt")</p>
+                            <p class="text-xs text-gray-600 mb-2">@item.AttendeeCount going</p>
+                            <a asp-action="Details" asp-route-id="@item.Id"
+                               class="text-xs bg-blue-600 text-white px-2 py-1 rounded block text-center">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Map Controls Placeholder -->
+            <div class="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2">
+                <button class="block w-8 h-8 hover:bg-gray-100 rounded flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="block w-8 h-8 hover:bg-gray-100 rounded flex items-center justify-center">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+
+            <!-- Search Box -->
+            <div class="absolute top-4 left-4 w-64">
+                <input type="text"
+                       placeholder="Search location..."
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event List Sidebar (optional) -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Events on Map</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach (var item in Model.Take(6))
+        {
+            <div class="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow">
+                <div class="flex items-start space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">@item.Title</h3>
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-map-marker-alt text-red-400 mr-1"></i>@item.City
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">@item.AttendeeCount going</p>
+                    </div>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
