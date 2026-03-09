@@ -5,30 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EventFinder</title>
 
-    <!-- Bootstrap (keep for now, we'll replace gradually) -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <!-- Font Awesome for icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Dark mode scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 5px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #64748b;
+            }
+
+        /* Ensure content is above video */
+        .content-above {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Video container */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+            .video-background video {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        /* Animated gradient fallback - FIXED SYNTAX */
+        .gradient-fallback {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+        }
+
+        /* FIXED: Keyframes need proper CSS syntax */
+        @@keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <header>
-        <nav class="bg-white shadow-lg border-b border-gray-200">
+<body class="text-gray-200">
+    <!-- ===== FULL PAGE VIDEO BACKGROUND ===== -->
+    <div class="video-background">
+        <!-- Try multiple video sources -->
+        <video autoplay muted loop playsinline id="bg-video">
+            <!-- Option 1: Direct path (most reliable) -->
+            <source src="/videos/event-background.mp4" type="video/mp4">
+
+            <!-- Option 2: With Url.Content (ASP.NET way) -->
+            <source src="@Url.Content("~/videos/event-background.mp4")" type="video/mp4">
+
+            <!-- Option 3: WebM format -->
+            <source src="/videos/event-background.webm" type="video/webm">
+        </video>
+
+        <!-- Dark overlay -->
+        <div class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-70"></div>
+
+        <!-- Gradient overlay -->
+        <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-blue-900/50 to-purple-900/50 mix-blend-overlay"></div>
+    </div>
+
+    <!-- ===== HEADER (semi-transparent) ===== -->
+    <header class="content-above">
+        <nav class="bg-gray-900/80 backdrop-blur-md shadow-lg border-b border-gray-700/50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center">
@@ -37,7 +125,7 @@
                             <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg">
                                 <i class="fas fa-calendar-alt text-xl"></i>
                             </div>
-                            <span class="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            <span class="font-bold text-xl bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                                 EventFinder
                             </span>
                         </a>
@@ -45,15 +133,15 @@
                         <!-- Navigation Links -->
                         <div class="hidden md:flex ml-10 space-x-8">
                             <a asp-area="" asp-controller="Home" asp-action="Index"
-                               class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                               class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors duration-200">
                                 <i class="fas fa-home mr-1"></i>Home
                             </a>
                             <a asp-area="" asp-controller="Home" asp-action="Events"
-                               class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                               class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors duration-200">
                                 <i class="fas fa-search mr-1"></i>Browse Events
                             </a>
                             <a asp-area="" asp-controller="Home" asp-action="Map"
-                               class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors duration-200">
+                               class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors duration-200">
                                 <i class="fas fa-map-marker-alt mr-1"></i>Map View
                             </a>
                         </div>
@@ -66,8 +154,13 @@
                             <i class="fas fa-plus mr-1"></i>Create Event
                         </a>
 
+                        <!-- Dark mode toggle -->
+                        <button id="theme-toggle" class="text-gray-300 hover:text-white p-2 rounded-lg hover:bg-gray-700/50 transition-colors">
+                            <i class="fas fa-moon"></i>
+                        </button>
+
                         <!-- Mobile menu button -->
-                        <button class="md:hidden text-gray-700 hover:text-blue-600">
+                        <button class="md:hidden text-gray-300 hover:text-white">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                     </div>
@@ -76,51 +169,130 @@
         </nav>
     </header>
 
-    <main class="py-8">
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content-above py-8 min-h-screen">
+        <!-- Hero Section with your exact class -->
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                @(ViewData["Title"] ?? "EventFinder")
+            </h1>
+            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                Discover and join amazing events in your community
+            </p>
+        </div>
+
+        <!-- Render the actual page content -->
         @RenderBody()
     </main>
 
-    <!-- Modern Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-auto">
+    <!-- ===== FOOTER (semi-transparent) ===== -->
+    <footer class="content-above bg-gray-900/80 backdrop-blur-md border-t border-gray-700/50 mt-auto">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <h3 class="font-bold text-gray-900 mb-4">EventFinder</h3>
-                    <p class="text-gray-600 text-sm">Discover and share amazing events in your community.</p>
+                    <h3 class="font-bold text-white mb-4">EventFinder</h3>
+                    <p class="text-gray-400 text-sm">Discover and share amazing events in your community.</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-900 mb-4">Quick Links</h4>
+                    <h4 class="font-semibold text-white mb-4">Quick Links</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600">About Us</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600">Contact</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600">FAQ</a></li>
+                        <li><a asp-action="About" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a asp-action="Contact" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                        <li><a asp-action="FAQ" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-900 mb-4">Legal</h4>
+                    <h4 class="font-semibold text-white mb-4">Legal</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-600 hover:text-blue-600">Terms of Service</a></li>
+                        <li><a asp-action="Privacy" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a asp-action="Terms" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-900 mb-4">Follow Us</h4>
+                    <h4 class="font-semibold text-white mb-4">Follow Us</h4>
                     <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-blue-600"><i class="fab fa-facebook-f text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-blue-600"><i class="fab fa-twitter text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-blue-600"><i class="fab fa-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook-f text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram text-xl"></i></a>
                     </div>
                 </div>
             </div>
-            <div class="border-t border-gray-200 mt-8 pt-4 text-center text-gray-600 text-sm">
+            <div class="border-t border-gray-700/50 mt-8 pt-4 text-center text-gray-400 text-sm">
                 &copy; @DateTime.Now.Year - EventFinder. All rights reserved.
             </div>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <!-- UPDATED VIDEO DEBUG SCRIPT -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('bg-video');
+
+            if (!video) {
+                console.error('❌ Video element not found');
+                return;
+            }
+
+            console.log('✅ Video element found');
+
+            // Log all source paths
+            const sources = video.getElementsByTagName('source');
+            console.log('📁 Available video sources:');
+            for (let i = 0; i < sources.length; i++) {
+                console.log(`   Option ${i+1}: ${sources[i].src}`);
+            }
+
+            // Check if video can play
+            video.addEventListener('canplay', function() {
+                console.log('✅ Video can play - background working!');
+            });
+
+            video.addEventListener('error', function(e) {
+                console.error('❌ Video error details:');
+                console.error('   Error code:', video.error?.code);
+                console.error('   Error message:', video.error?.message);
+
+                // Show help message
+                console.log('🔧 TROUBLESHOOTING:');
+                console.log('   1. Check if file exists in: wwwroot/videos/event-background.mp4');
+                console.log('   2. Make sure the video format is MP4 (H.264 codec)');
+                console.log('   3. Try opening this URL directly:', window.location.origin + '/videos/event-background.mp4');
+            });
+
+            // Try to play
+            video.play().then(() => {
+                console.log('✅ Video playing successfully');
+            }).catch(e => {
+                console.log('⚠️ Autoplay failed:', e.message);
+                // Some browsers require user interaction first
+                console.log('ℹ️ Click anywhere to start video');
+                document.body.addEventListener('click', function playOnClick() {
+                    video.play();
+                    document.body.removeEventListener('click', playOnClick);
+                }, { once: true });
+            });
+        });
+
+        // Theme toggle
+        document.getElementById('theme-toggle')?.addEventListener('click', function() {
+            document.body.classList.toggle('light-mode');
+        });
+
+        // Parallax effect
+        window.addEventListener('scroll', function() {
+            const video = document.querySelector('video');
+            const scrolled = window.pageYOffset;
+            if (video) {
+                video.style.transform = `translateY(${scrolled * 0.2}px)`;
+            }
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+</html>
