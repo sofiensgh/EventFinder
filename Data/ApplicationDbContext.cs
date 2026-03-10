@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using EventFinder.Models;
 
 namespace EventFinder.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -34,6 +35,12 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Category);
             entity.HasIndex(e => e.City);
             entity.HasIndex(e => new { e.Latitude, e.Longitude });
+
+            // Relationship with ApplicationUser
+            entity.HasOne<ApplicationUser>()
+                .WithMany(u => u.OrganizedEvents)
+                .HasForeignKey(e => e.OrganizerId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Configure RSVP
@@ -53,6 +60,11 @@ public class ApplicationDbContext : DbContext
                 .WithMany(e => e.RSVPs)
                 .HasForeignKey(e => e.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<ApplicationUser>()
+                .WithMany(u => u.RSVPs)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

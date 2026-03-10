@@ -1,0 +1,117 @@
+@model EventFinder.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+            <h2 class="text-4xl font-extrabold text-white mb-2">
+                <i class="fas fa-user-plus text-blue-500 mr-2"></i>Create Account
+            </h2>
+            <p class="text-gray-400">Join EventFinder and start discovering amazing events!</p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
+            <form asp-action="Register" method="post" class="space-y-6">
+                <input type="hidden" asp-for="@ViewData["ReturnUrl"]" />
+                <div asp-validation-summary="ModelOnly" class="bg-red-900/50 border-l-4 border-red-500 text-red-200 p-4 rounded-lg mb-4" role="alert"></div>
+
+                <!-- Full Name -->
+                <div>
+                    <label asp-for="FullName" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-user mr-1 text-blue-400"></i>Full Name
+                    </label>
+                    <input asp-for="FullName" 
+                           class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                           placeholder="Enter your full name" />
+                    <span asp-validation-for="FullName" class="text-red-400 text-sm mt-1 block"></span>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label asp-for="Email" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-envelope mr-1 text-blue-400"></i>Email Address
+                    </label>
+                    <input asp-for="Email" 
+                           class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                           placeholder="your.email@example.com" />
+                    <span asp-validation-for="Email" class="text-red-400 text-sm mt-1 block"></span>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label asp-for="Password" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-lock mr-1 text-blue-400"></i>Password
+                    </label>
+                    <input asp-for="Password" 
+                           class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                           placeholder="Create a strong password" />
+                    <span asp-validation-for="Password" class="text-red-400 text-sm mt-1 block"></span>
+                    <p class="text-gray-400 text-xs mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>At least 6 characters with uppercase, lowercase, and numbers
+                    </p>
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label asp-for="ConfirmPassword" class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-lock mr-1 text-blue-400"></i>Confirm Password
+                    </label>
+                    <input asp-for="ConfirmPassword" 
+                           class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                           placeholder="Re-enter your password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-red-400 text-sm mt-1 block"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
+                        <i class="fas fa-user-plus mr-2"></i>Create Account
+                    </button>
+                </div>
+
+                <!-- Login Link -->
+                <div class="text-center pt-4 border-t border-gray-700">
+                    <p class="text-gray-400">
+                        Already have an account?
+                        <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" 
+                           class="text-blue-400 hover:text-blue-300 font-semibold ml-1">
+                            Sign in here <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Features -->
+        <div class="grid grid-cols-3 gap-4 mt-8">
+            <div class="text-center">
+                <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <i class="fas fa-calendar-plus text-blue-400 text-2xl mb-2"></i>
+                    <p class="text-gray-300 text-sm font-semibold">Create Events</p>
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <i class="fas fa-users text-green-400 text-2xl mb-2"></i>
+                    <p class="text-gray-300 text-sm font-semibold">Join Community</p>
+                </div>
+            </div>
+            <div class="text-center">
+                <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                    <i class="fas fa-star text-yellow-400 text-2xl mb-2"></i>
+                    <p class="text-gray-300 text-sm font-semibold">Save Favorites</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
