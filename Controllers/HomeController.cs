@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using EventFinder.Data;
 using EventFinder.Models;
+using System.Security.Claims;
 
 namespace EventFinder.Controllers;
 
@@ -71,6 +73,7 @@ public class HomeController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public IActionResult Create()
     {
         return View(new Event
@@ -82,13 +85,14 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Create(Event @event)
     {
         if (ModelState.IsValid)
         {
             @event.CreatedAt = DateTime.UtcNow;
-            @event.OrganizerId = "temp-user-id";
-            @event.OrganizerName = "Anonymous User";
+            @event.OrganizerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            @event.OrganizerName = User.Identity?.Name ?? "Unknown";
 
             _context.Add(@event);
             await _context.SaveChangesAsync();
@@ -101,10 +105,17 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> RSVP(int eventId, RSVPStatus status)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         var existingRSVP = await _context.RSVPs
-            .FirstOrDefaultAsync(r => r.EventId == eventId && r.UserId == "temp-user-id");
+            .FirstOrDefaultAsync(r => r.EventId == eventId && r.UserId == userId);
 
         if (existingRSVP != null)
         {
@@ -116,8 +127,8 @@ public class HomeController : Controller
             var rsvp = new RSVP
             {
                 EventId = eventId,
-                UserId = "temp-user-id",
-                UserName = "Anonymous User",
+                UserId = userId,
+                UserName = User.Identity?.Name ?? "Unknown",
                 Status = status
             };
             _context.RSVPs.Add(rsvp);
@@ -171,12 +182,15 @@ public class HomeController : Controller
     }
 
     // NEW: My Events (for authenticated users)
+    [Authorize]
     public async Task<IActionResult> MyEvents()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var myEvents = await _context.Events
             .Include(e => e.RSVPs)
-            .Where(e => e.OrganizerId == "temp-user-id" ||
-                       e.RSVPs.Any(r => r.UserId == "temp-user-id"))
+            .Where(e => e.OrganizerId == userId ||
+                       e.RSVPs.Any(r => r.UserId == userId))
             .OrderBy(e => e.StartDate)
             .ToListAsync();
 
@@ -185,6 +199,7 @@ public class HomeController : Controller
 
     // NEW: Edit event (for organizers)
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Edit(int id)
     {
         var @event = await _context.Events.FindAsync(id);
@@ -192,8 +207,10 @@ public class HomeController : Controller
         if (@event == null)
             return NotFound();
 
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         // Check if user is the organizer
-        if (@event.OrganizerId != "temp-user-id")
+        if (@event.OrganizerId != userId)
             return Forbid();
 
         return View(@event);
@@ -201,14 +218,17 @@ public class HomeController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Edit(int id, Event @event)
     {
         if (id != @event.Id)
             return NotFound();
 
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         // Check if user is the organizer
         var existingEvent = await _context.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
-        if (existingEvent == null || existingEvent.OrganizerId != "temp-user-id")
+        if (existingEvent == null || existingEvent.OrganizerId != userId)
             return Forbid();
 
         if (ModelState.IsValid)
@@ -234,6 +254,7 @@ public class HomeController : Controller
     // NEW: Delete event (for organizers)
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
         var @event = await _context.Events
@@ -243,8 +264,10 @@ public class HomeController : Controller
         if (@event == null)
             return NotFound();
 
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         // Check if user is the organizer
-        if (@event.OrganizerId != "temp-user-id")
+        if (@event.OrganizerId != userId)
             return Forbid();
 
         // Remove all RSVPs first (cascade delete should handle this, but just to be safe)
